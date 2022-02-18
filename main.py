@@ -1,6 +1,8 @@
 import os
+import shutil
 from csv import DictWriter
 from pprint import pprint
+import os
 
 import click
 import pandas as pd
@@ -8,6 +10,7 @@ import pdfplumber
 from tqdm import tqdm
 
 from helpers import clean_data, extract_info
+from pdf_spliter import split_pdf
 import gc
 
 
@@ -18,25 +21,32 @@ import gc
     help="Nom du dossier de sortie. Le nom du fichier de sortie est le même que celui du fichier d'entrée mais avec l'extension CSV",
 )
 def main(input_file_name, output_file_name):
-   headers_written = False
-   fichier = str(input_file_name.name.split(".pdf")[0])
+    if os.path.isdir("./.tmp"):
+        shutil.rmtree("./.tmp")
+    if not os.path.isdir("./.tmp"):
+        os.mkdir("./.tmp")
 
-   with pdfplumber.open(fichier + ".pdf") as pdf:
-        # first_page_of_pdf = pdf.pages[0]
-      nb_page = len(pdf.pages)
+    headers_written = False
+    fichier = str(input_file_name.name.split(".pdf")[0])
+    split_pdf(input_file_name.name, "./.tmp")
 
-   for i in tqdm(range(nb_page)):
-      with pdfplumber.open(fichier + ".pdf") as pdf:
-        # first_page_of_pdf = pdf.pages[0]
-         res = [extract_info(i, pdf)]
-         df = pd.DataFrame(res)
-         if headers_written:
-            df.to_csv(fichier +".csv", index=False, mode="a")
-         else:
-            df.to_csv(fichier + ".csv", index=False, mode="w", header=True)
-            headers_written = True
 
-   return 0
+    for file in tqdm(os.listdir("./.tmp")):
+        if file.endswith(".pdf"):
+            with pdfplumber.open("./.tmp/" + file) as pdf:
+                # first_page_of_pdf = pdf.pages[0]
+                res = [extract_info(0, pdf)]
+                # df = clean_data(res)
+                df = pd.DataFrame(res)
+                if headers_written:
+                    df.to_csv(fichier + ".csv", index=False, mode="a", header=False)
+                else:
+                    df.to_csv(fichier + ".csv", index=False, mode="w", header=True)
+                    headers_written = True
+
+    if os.path.isdir("./.tmp"):
+        shutil.rmtree("./.tmp")
+    return 0
 
 
 if __name__ == "__main__":

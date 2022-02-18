@@ -89,6 +89,7 @@ def clean_data(res):
 
     # clean data historique consommation
     s = df["historique_consommation"].str.split("\n").apply(pd.Series, 1)
+    print(s)
     s.rename(
         columns={
             0: "historique_consommation_1",
@@ -98,7 +99,7 @@ def clean_data(res):
         inplace=True,
     )
     df = df.join(s)
-
+    
     df[
         ["historique_consommation_1_date", "historique_consommation_1_valeur"]
     ] = df.historique_consommation_1.str.split(expand=True)
