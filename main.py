@@ -16,8 +16,7 @@ import gc
 
 @click.command()
 @click.option("--input_file_name", help="Nom du fichier d'entrée", type=click.File())
-@click.option("--output_file_name", help="Nom du dossier de sortie. Le nom du fichier de sortie est le même que celui du fichier d'entrée mais avec l'extension CSV")
-def main(input_file_name, output_file_name):
+def main(input_file_name):
     if os.path.isdir("./.tmp"):
         shutil.rmtree("./.tmp")
     if not os.path.isdir("./.tmp"):
